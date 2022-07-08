@@ -5,17 +5,10 @@ import { AppErrorFilter } from './app-error.filter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
+import dbConfig from './mikro-orm.config';
 
 @Module({
-  imports: [
-    MikroOrmModule.forRoot({
-      entities: ['dist/**/*.entity.js'],
-      entitiesTs: ['src/**/*.entity.ts'],
-      dbName: 'work-time-tracker',
-      type: 'sqlite',
-    }),
-    UserModule,
-  ],
+  imports: [MikroOrmModule.forRoot(dbConfig), UserModule],
   controllers: [AppController],
   providers: [
     AppService,
