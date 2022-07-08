@@ -1,7 +1,11 @@
 import { PrimaryKey, Property } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
-export abstract class AppEntity {
+export abstract class AppEntity<T> {
+  constructor(data?: Partial<T>) {
+    Object.assign(this, data);
+  }
+
   @PrimaryKey()
   id: string = v4();
 
