@@ -43,11 +43,54 @@ describe('UserService', () => {
     it('should save user', async () => {
       const user = { email: 'test@mail.com', name: 'test', password: 'asd' } as CreateUserDto;
 
-      const res = await service.create(user);
+      const result = await service.create(user);
 
-      expect(res).toMatchObject(user);
-      expect(persist.mock.calls[0][0]).toEqual(expect.objectContaining(user));
+      const expected = expect.objectContaining({
+        ...user,
+        password: await service.createPasswordHash(user.password),
+      });
+
+      expect(result).toMatchObject(expected);
+      expect(persist.mock.calls[0][0]).toEqual(expected);
       expect(flush.mock.calls.length).toEqual(1);
+    });
+  });
+
+  describe('password hash', () => {
+    it('should create different hashes', async () => {
+      const pass0 = '123';
+      const pass1 = '444';
+
+      const hash0 = await service.createPasswordHash(pass0);
+      const hash1 = await service.createPasswordHash(pass1);
+
+      expect(hash0).not.toEqual(pass0);
+      expect(hash1).not.toEqual(pass1);
+      expect(hash0).not.toEqual(hash1);
+    });
+
+    it('should create same hashes with same pass', async () => {
+      const pass0 = '123';
+
+      const hash0 = await service.createPasswordHash(pass0);
+      const hash1 = await service.createPasswordHash(pass0);
+
+      expect(hash0).not.toEqual(pass0);
+      expect(hash1).not.toEqual(pass0);
+      expect(hash0).toEqual(hash1);
+    });
+
+    it('should validate hash', async () => {
+      const pass = 'test555';
+
+      const hash0 = await service.createPasswordHash(pass);
+      const hash1 = await service.createPasswordHash('987');
+
+      const res0 = await service.isPasswordValid(pass, hash0);
+      const res1 = await service.isPasswordValid(pass, hash1);
+
+      expect(res0).toEqual(true);
+      expect(res1).toEqual(false);
     });
   });
 });
