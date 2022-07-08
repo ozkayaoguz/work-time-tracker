@@ -24,7 +24,7 @@ function initDocument(app: INestApplication) {
   };
 
   const document = SwaggerModule.createDocument(app, config, options);
-  SwaggerModule.setup('/', app, document);
+  SwaggerModule.setup('/docs', app, document);
 }
 
 bootstrap();
