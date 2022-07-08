@@ -23,10 +23,6 @@ describe('UserService', () => {
     userRepo = module.get(UserRepository);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
   describe('create user', () => {
     it('should check email exists', async () => {
       var spy = jest
@@ -43,15 +39,15 @@ describe('UserService', () => {
 
       spy.mockRestore();
     });
-  });
 
-  it('should save user', async () => {
-    const user = { email: 'test@mail.com', name: 'test', password: 'asd' } as CreateUserDto;
+    it('should save user', async () => {
+      const user = { email: 'test@mail.com', name: 'test', password: 'asd' } as CreateUserDto;
 
-    const res = await service.create(user);
+      const res = await service.create(user);
 
-    expect(res).toMatchObject(user);
-    expect(persist.mock.calls[0][0]).toEqual(expect.objectContaining(user));
-    expect(flush.mock.calls.length).toEqual(1);
+      expect(res).toMatchObject(user);
+      expect(persist.mock.calls[0][0]).toEqual(expect.objectContaining(user));
+      expect(flush.mock.calls.length).toEqual(1);
+    });
   });
 });
