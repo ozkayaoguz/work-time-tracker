@@ -1,12 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { PaginatedResultDto } from '../utils/paginated-result.dto';
 import { createMockRepository } from '../utils/mock.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEmailAlreadyExistsError } from './error/user-email-already-exists.error';
+import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
+import { FindUserDto } from './dto/find-user.dto';
 
 const { repo, persist, flush } = createMockRepository<UserRepository>();
 repo.isEmailExists = () => Promise.resolve(false);
+repo.findUser = (dto) => {
+  const res = new PaginatedResultDto<User>();
+  res.data = [];
+
+  if (dto.name === 'test') res.data.push({ name: 'test' } as User);
+
+  return Promise.resolve(res);
+};
 
 describe('UserService', () => {
   let service: UserService;
@@ -92,5 +103,14 @@ describe('UserService', () => {
       expect(res0).toEqual(true);
       expect(res1).toEqual(false);
     });
+  });
+
+  it('should get users', async () => {
+    const dto = new FindUserDto();
+    dto.name = 'test';
+
+    const res = await service.find(dto);
+
+    expect(res.data[0].name).toEqual('test');
   });
 });
