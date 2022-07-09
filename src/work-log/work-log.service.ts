@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
+import { FindWorkLogDto } from './dto/find-work-log.dto';
 import { StartWorkDto } from './dto/start-work.dto';
 import { ActiveLogRecordNotFoundError } from './error/active-log-record-not-found.error';
 import { LogRecordActiveError } from './error/log-record-active.error';
@@ -32,5 +33,9 @@ export class WorkLogService {
 
     await this.workLogRepository.persistAndFlush(activeLog);
     return activeLog;
+  }
+
+  find(dto: FindWorkLogDto, userId?: string) {
+    return this.workLogRepository.findWorkLogs(dto, userId);
   }
 }

@@ -1,6 +1,7 @@
-import { Body, Controller, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DefaultApiResponse } from '../utils/default-api-response.decorator';
+import { DefaultApiResponse, PaginatedApiResponse } from '../utils/default-api-response.decorator';
+import { FindWorkLogDto } from './dto/find-work-log.dto';
 import { StartWorkDto } from './dto/start-work.dto';
 import { WorkLog } from './work-log.entity';
 import { WorkLogService } from './work-log.service';
@@ -22,5 +23,12 @@ export class WorkLogController {
   @DefaultApiResponse({ type: WorkLog })
   finishWork(@Param('userId', ParseUUIDPipe) id: string) {
     return this.workLogService.finishWork(id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Find work logs' })
+  @PaginatedApiResponse(WorkLog)
+  find(@Query() dto: FindWorkLogDto) {
+    return this.workLogService.find(dto);
   }
 }
