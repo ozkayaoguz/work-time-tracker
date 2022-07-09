@@ -9,6 +9,7 @@ const config: MikroOrmModuleOptions = {
   entitiesTs: ['src/**/*.entity.ts'],
   dbName: DB_NAME,
   type: 'sqlite',
+  // debug: true,
   migrations: {
     path: 'dist/migrations',
     pathTs: 'src/migrations',

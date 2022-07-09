@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DefaultApiResponse } from '../utils/default-api-response.decorator';
+import { DefaultApiResponse, PaginatedApiResponse } from '../utils/default-api-response.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { User } from './user.entity';
@@ -20,7 +20,7 @@ export class UserController {
 
   @Get()
   @ApiOperation({ summary: 'Find user' })
-  @DefaultApiResponse({ type: User })
+  @PaginatedApiResponse(User)
   find(@Query() dto: FindUserDto) {
     return this.userService.find(dto);
   }
