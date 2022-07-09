@@ -1,6 +1,6 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppErrorFilter } from './utils/app-error.filter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,6 +15,10 @@ import dbConfig from './mikro-orm.config';
     {
       provide: APP_FILTER,
       useClass: AppErrorFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
     },
   ],
 })
