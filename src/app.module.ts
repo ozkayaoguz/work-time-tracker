@@ -5,10 +5,11 @@ import { AppErrorFilter } from './utils/app-error.filter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
+import { WorkLogModule } from './work-log/work-log.module';
 import dbConfig from './mikro-orm.config';
 
 @Module({
-  imports: [MikroOrmModule.forRoot(dbConfig), UserModule],
+  imports: [MikroOrmModule.forRoot(dbConfig), UserModule, WorkLogModule],
   controllers: [AppController],
   providers: [
     AppService,
