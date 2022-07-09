@@ -1,9 +1,13 @@
+import './environments';
+
 import { MikroOrmModuleOptions } from '@mikro-orm/nestjs';
+
+const DB_NAME = process.env.DB_NAME || 'db/work-time-tracker';
 
 const config: MikroOrmModuleOptions = {
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  dbName: 'db/work-time-tracker',
+  dbName: DB_NAME,
   type: 'sqlite',
   migrations: {
     path: 'dist/migrations',

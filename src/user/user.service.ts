@@ -6,8 +6,7 @@ import { UserEmailAlreadyExistsError } from './error/user-email-already-exists.e
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 
-//TODO: read salt from .env
-const PASSWORD_SALT = 'salt123';
+const PASSWORD_SALT = process.env.PASSWORD_SALT || 'salt123';
 
 const asyncScrypt = promisify((salt: string, str: string, cb: (err, res: string) => void) => {
   scrypt(str, salt, 48, (err, res) => cb(err, res.toString('base64')));
