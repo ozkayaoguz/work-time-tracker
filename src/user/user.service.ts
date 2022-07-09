@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { scrypt } from 'crypto';
 import { promisify } from 'util';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FindUserDto } from './dto/find-user.dto';
 import { UserEmailAlreadyExistsError } from './error/user-email-already-exists.error';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
@@ -23,6 +24,10 @@ export class UserService {
     const user = new User({ ...dto, password: await this.createPasswordHash(dto.password) });
     await this.userRepository.persistAndFlush(user);
     return user;
+  }
+
+  find(dto: FindUserDto) {
+    return this.userRepository.findUser(dto);
   }
 
   createPasswordHash(password: string): Promise<string> {
