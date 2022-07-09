@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { createMockRepository } from '../mock.repository';
+import { createMockRepository } from '../utils/mock.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEmailAlreadyExistsError } from './error/user-email-already-exists.error';
 import { UserRepository } from './user.repository';

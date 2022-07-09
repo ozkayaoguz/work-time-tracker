@@ -1,6 +1,6 @@
 import { Entity, Property, Unique } from '@mikro-orm/core';
 import { Exclude } from 'class-transformer';
-import { AppEntity } from '../app.entity';
+import { AppEntity } from '../utils/app.entity';
 import { UserRepository } from './user.repository';
 
 @Entity({ customRepository: () => UserRepository })
