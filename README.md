@@ -2,6 +2,11 @@
 
 Track working time and download the report.
 
+## Swagger Url
+
+http://localhost:3000/docs
+
+
 ## Installation
 
 ```bash
