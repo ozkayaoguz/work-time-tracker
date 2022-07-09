@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { Entity, Formula, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../user/user.entity';
 import { AppEntity } from '../utils/app.entity';
@@ -17,6 +17,10 @@ export class WorkLog extends AppEntity<WorkLog> {
   @ApiProperty({ nullable: true })
   @Property({ nullable: true })
   endedAt?: Date;
+
+  @ApiProperty({ nullable: true })
+  @Formula((a) => `(cast(${a}.ended_at AS real) - ${a}.started_at) / (1000*60*60)`)
+  workedHours: number;
 
   @ManyToOne(() => User)
   user: User;

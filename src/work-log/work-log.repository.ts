@@ -20,6 +20,8 @@ export class WorkLogRepository extends EntityRepository<WorkLog> {
   findWorkLogs(dto: FindWorkLogDto, userId?: string): Promise<PaginatedResultDto<WorkLog>> {
     const query = this.em.createQueryBuilder(WorkLog);
 
+    query.joinAndSelect('user' as keyof WorkLog, 'u');
+
     if (userId) {
       query.andWhere({ user: userId });
     }
