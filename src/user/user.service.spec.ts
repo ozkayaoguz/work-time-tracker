@@ -7,9 +7,11 @@ import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
 import { FindUserDto } from './dto/find-user.dto';
+import { UserNotFoundError } from './error/user-not-found.error';
 
 const { repo, persist, flush } = createMockRepository<UserRepository>();
 repo.isEmailExists = () => Promise.resolve(false);
+repo.isUserExists = jest.fn(() => Promise.resolve(true));
 repo.findUser = (dto) => {
   const res = new PaginatedResultDto<User>();
   res.data = [];
@@ -112,5 +114,23 @@ describe('UserService', () => {
     const res = await service.find(dto);
 
     expect(res.data[0].name).toEqual('test');
+  });
+
+  it('isUserExists method should call repository user check method', async () => {
+    const id = 'b28aec6f-54b1-4e53-a857-07806ce69db1';
+
+    const res = await service.isUserExists(id);
+
+    expect(res).toEqual(true);
+    expect((repo.isUserExists as jest.Mock).mock.calls[0][0]).toEqual(id);
+  });
+
+  it('isUserExists method should call repository user check method', async () => {
+    const spy = jest.spyOn(repo, 'isUserExists').mockImplementation(() => Promise.resolve(false));
+
+    const promise = service.checkUserExists('');
+    await expect(promise).rejects.toBeInstanceOf(UserNotFoundError);
+
+    spy.mockRestore();
   });
 });

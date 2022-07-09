@@ -10,6 +10,12 @@ export class UserRepository extends EntityRepository<User> {
     return res !== null;
   }
 
+  async isUserExists(id: string): Promise<boolean> {
+    const res = await this.findOne({ id }, { fields: ['id'] });
+
+    return res !== null;
+  }
+
   async findUser(dto: FindUserDto) {
     const query = this.em.createQueryBuilder(User);
 

@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UserEmailAlreadyExistsError } from './error/user-email-already-exists.error';
+import { UserNotFoundError } from './error/user-not-found.error';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 
@@ -24,6 +25,15 @@ export class UserService {
     const user = new User({ ...dto, password: await this.createPasswordHash(dto.password) });
     await this.userRepository.persistAndFlush(user);
     return user;
+  }
+
+  isUserExists(id: string): Promise<boolean> {
+    return this.userRepository.isUserExists(id);
+  }
+
+  async checkUserExists(id: string): Promise<void> {
+    const exists = await this.isUserExists(id);
+    if (!exists) throw new UserNotFoundError();
   }
 
   find(dto: FindUserDto) {
