@@ -1,0 +1,28 @@
+version: "3.5"
+
+services:
+  db:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - work-time-tracker-pg:/data/postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-admin}
+      - PGDATA=/data/postgres
+      - POSTGRES_DB=${DB_NAME:-work_time_tracker}
+
+  db-admin:
+    image: dpage/pgadmin4
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - work-time-tracker-pg-admin:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@mail.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
+
+volumes:
+  work-time-tracker-pg:
+  work-time-tracker-pg-admin:
