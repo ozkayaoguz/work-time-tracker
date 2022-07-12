@@ -2,10 +2,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaginatedRequestDto } from '../../utils/paginated-request.dto';
-import { BaseDto } from '../../utils/base.dto';
-import { WorkLog } from '../work-log.entity';
 
-export class FindWorkLogDto extends PaginatedRequestDto implements BaseDto<WorkLog> {
+export class FindWorkLogRequestDto extends PaginatedRequestDto {
   @MaxLength(64)
   @IsOptional()
   @ApiPropertyOptional()
@@ -13,7 +11,7 @@ export class FindWorkLogDto extends PaginatedRequestDto implements BaseDto<WorkL
 
   @IsOptional()
   @Type(() => Date)
-  @ApiPropertyOptional({ example: new Date().toISOString() })
+  @ApiPropertyOptional({ description: `String date: ${new Date().toISOString()}` })
   startedAfter?: Date;
 
   @IsOptional()

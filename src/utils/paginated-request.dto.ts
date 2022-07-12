@@ -3,8 +3,8 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export enum Order {
-  Asc = 'ASC',
-  Desc = 'DESC',
+  Asc = 'asc',
+  Desc = 'desc',
 }
 
 export class PaginatedRequestDto {

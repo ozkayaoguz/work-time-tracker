@@ -1,16 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Connection } from '../database/connection';
+import { ConnectionMock } from '../database/connection-mock';
 import { UserService } from '../user/user.service';
-import { createMockRepository } from '../utils/mock.repository';
 import { StartWorkDto } from './dto/start-work.dto';
+import { WorkLogDto } from './dto/work-log.dto';
 import { ActiveLogRecordNotFoundError } from './error/active-log-record-not-found.error';
 import { LogRecordActiveError } from './error/log-record-active.error';
-import { WorkLog } from './work-log.entity';
 import { WorkLogRepository } from './work-log.repository';
 import { WorkLogService } from './work-log.service';
 
-const { repo, persist, flush } = createMockRepository<WorkLogRepository>();
+const connection = new ConnectionMock();
+const repo = connection.getRepo<WorkLogRepository>();
 repo.addLog = jest.fn();
 repo.getActiveLog = () => Promise.resolve(null);
+repo.finishLog = jest.fn((id) => Promise.resolve(null));
 
 const userService: Partial<UserService> = {
   checkUserExists: jest.fn(),
@@ -25,7 +28,7 @@ describe('WorkLogService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkLogService,
-        { provide: WorkLogRepository, useValue: repo },
+        { provide: Connection, useValue: connection },
         { provide: UserService, useValue: userService },
       ],
     }).compile();
@@ -48,7 +51,7 @@ describe('WorkLogService', () => {
     it('should throw error if there are another active log', async () => {
       const spy = jest
         .spyOn(repo, 'getActiveLog')
-        .mockImplementation(() => Promise.resolve(new WorkLog()));
+        .mockImplementation(() => Promise.resolve(new WorkLogDto()));
 
       const promise = service.startWork('', { description: '' });
       await expect(promise).rejects.toBeInstanceOf(LogRecordActiveError);
@@ -57,17 +60,17 @@ describe('WorkLogService', () => {
     });
   });
 
-  describe('close log', () => {
+  describe('finish work', () => {
     it('should update end date', async () => {
-      const log = new WorkLog();
-      log.endedAt = new Date('2009');
-      const date = new Date('2020');
+      const log = new WorkLogDto();
+      log.id = '6f728584-549c-4701-a82b-419aa8400bf0';
+      const userId = 'f80854c9-c265-4e7d-bfd3-8bdf5733e0f3';
 
       const spy = jest.spyOn(repo, 'getActiveLog').mockImplementation(() => Promise.resolve(log));
 
-      await service.finishWork('');
-      expect(flush.mock.calls.length).toEqual(1);
-      expect(persist.mock.calls[0][0].endedAt.getTime()).toBeGreaterThan(date.getTime());
+      await service.finishWork(userId);
+      expect((repo.finishLog as jest.Mock).mock.calls[0][0]).toEqual(log.id);
+      expect((userService.checkUserExists as jest.Mock).mock.calls[0][0]).toEqual(userId);
 
       spy.mockRestore();
     });

@@ -1,31 +1,42 @@
-import { QueryBuilder } from '@mikro-orm/sqlite';
+import { Knex } from 'knex';
 import { ApiProperty } from '@nestjs/swagger';
-import { AppEntity } from './app.entity';
 import { PageMetaDto } from './page-meta.dto';
 import { PaginatedRequestDto } from './paginated-request.dto';
 
-export type CreatePaginatedResultParams<T extends AppEntity<T>> = {
-  query: QueryBuilder<T>;
+export type CreatePaginatedResultParams<T, R, D = R> = {
+  query: Knex.QueryBuilder<T, R[]>;
   dto: PaginatedRequestDto;
   orderColumn: keyof T;
+  mapper?: (result: R) => D;
 };
 
 export class PaginatedResultDto<T> {
-  @ApiProperty({ type: PageMetaDto })
+  @ApiProperty()
   meta: PageMetaDto;
 
   @ApiProperty({ isArray: true })
-  data: T[];
+  data: T[] = [];
 
-  static async getResult<R extends AppEntity<R>>(params: CreatePaginatedResultParams<R>) {
-    const { query, orderColumn } = params;
+  static async getResult<T, R, D = R>(params: CreatePaginatedResultParams<T, R, D>) {
+    const { query, orderColumn, mapper } = params;
     const { order, page, take } = params.dto;
+    const offset = (page - 1) * take;
+    const result = new PaginatedResultDto<D>();
 
-    query.orderBy({ [orderColumn]: order }).limit(take, (page - 1) * take);
+    const total = await query
+      .clone()
+      .clearSelect()
+      .count('* as __total')
+      .then((x) => parseInt(x[0].__total));
 
-    const result = new PaginatedResultDto<R>();
-    result.data = await query.getResultList();
-    result.meta = new PageMetaDto(params.dto, await query.getCount());
+    result.meta = new PageMetaDto(params.dto, total);
+
+    if (total <= offset) return result;
+
+    query.orderBy(orderColumn, order).limit(take).offset(offset);
+
+    if (mapper) result.data = await query.then((rows: any) => rows.map((x) => mapper(x)));
+    else result.data = (await query) as D[];
 
     return result;
   }

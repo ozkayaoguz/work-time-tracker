@@ -9,8 +9,8 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "npm run db:update && nest start",
-    "start:dev": "npm run db:update && nest start --watch",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -19,14 +19,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:update": "mikro-orm schema:update -r",
-    "db:migration:create": "mikro-orm migration:create",
-    "db:migration:up": "mikro-orm migration:up"
+    "db:update": "knex migrate:latest --knexfile src/database/knexfile.ts"
   },
   "dependencies": {
-    "@mikro-orm/core": "^5.2.3",
-    "@mikro-orm/nestjs": "^5.1.0",
-    "@mikro-orm/sqlite": "^5.2.3",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
@@ -34,14 +29,13 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "dotenv": "^16.0.1",
+    "knex": "^2.1.0",
+    "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0",
-    "uuid": "^8.3.2"
+    "rxjs": "^7.2.0"
   },
   "devDependencies": {
-    "@mikro-orm/cli": "^5.2.3",
-    "@mikro-orm/migrations": "^5.2.3",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
@@ -80,12 +74,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
-    ]
   }
 }

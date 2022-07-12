@@ -1,11 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
-import { BaseDto } from '../../utils/base.dto';
-import { User } from '../user.entity';
 
-export class CreateUserDto implements BaseDto<User> {
+export class CreateUserDto {
   @IsNotEmpty()
-  @MaxLength(50)
+  @MaxLength(64)
   @ApiProperty({ example: 'test' })
   name: string;
 

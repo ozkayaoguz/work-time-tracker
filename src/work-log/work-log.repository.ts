@@ -1,55 +1,81 @@
-import { EntityRepository } from '@mikro-orm/sqlite';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from '../database/repository';
 import { PaginatedResultDto } from '../utils/paginated-result.dto';
-import { User } from '../user/user.entity';
-import { FindWorkLogDto } from './dto/find-work-log.dto';
-import { WorkLog } from './work-log.entity';
+import { FindWorkLogRequestDto } from './dto/find-work-log-request.dto';
+import { FindWorkLogResponseDto } from './dto/find-work-log-response.dto';
+import { WorkLogDto } from './dto/work-log.dto';
 
-export class WorkLogRepository extends EntityRepository<WorkLog> {
-  async addLog(userId: string, description: string): Promise<WorkLog> {
-    const user = this.em.getReference(User, userId);
+export class WorkLogRepository extends Repository {
+  async addLog(userId: string, description: string): Promise<WorkLogDto> {
+    const res = await this.db('work_log')
+      .insert({ user_id: userId, description })
+      .returning('*')
+      .then((x) => plainToInstance(WorkLogDto, x));
 
-    const log = new WorkLog({ user, description });
-    await this.persistAndFlush(log);
-    return log;
+    return res[0];
   }
 
-  getActiveLog(userId: string): Promise<WorkLog> {
-    return this.findOne({ $and: [{ user: userId }, { endedAt: null }] });
+  async finishLog(id: string) {
+    const res = await this.db('work_log')
+      .where({ id })
+      .update('ended_at', new Date())
+      .returning('*')
+      .then((x) => plainToInstance(WorkLogDto, x));
+
+    return res[0];
   }
 
-  findWorkLogs(dto: FindWorkLogDto, userId?: string): Promise<PaginatedResultDto<WorkLog>> {
-    const query = this.em.createQueryBuilder(WorkLog);
+  async getActiveLog(userId: string): Promise<WorkLogDto> {
+    const res = await this.db('work_log')
+      .where({ user_id: userId, ended_at: null })
+      .limit(1)
+      .then((x) => plainToInstance(WorkLogDto, x));
 
-    query.joinAndSelect('user' as keyof WorkLog, 'u');
+    return res[0];
+  }
+
+  findWorkLogs(dto: FindWorkLogRequestDto, userId?: string) {
+    const query = this.db('work_log')
+      .join('user', 'work_log.user_id', '=', 'user.id')
+      .select(
+        'work_log.*',
+        'user.id as user_id',
+        'user.email as user_email',
+        'user.name as user_name',
+        this.db.raw(
+          'EXTRACT(EPOCH FROM work_log.ended_at - work_log.started_at)/3600 as __worked_hours',
+        ),
+      );
 
     if (userId) {
-      query.andWhere({ user: userId });
+      query.andWhere('user_id', '=', userId);
     }
 
     if (dto.startedAfter) {
-      query.andWhere({ startedAt: { $gte: dto.startedAfter } });
+      query.andWhere('started_at', '>=', dto.startedAfter);
     }
 
     if (dto.startedBefore) {
-      query.andWhere({ startedAt: { $lt: dto.startedBefore } });
+      query.andWhere('started_at', '<', dto.startedBefore);
     }
 
     if (dto.endedAfter) {
-      query.andWhere({ endedAt: { $gte: dto.endedAfter } });
+      query.andWhere('ended_at', '>=', dto.endedAfter);
     }
 
     if (dto.endedBefore) {
-      query.andWhere({ endedAt: { $lt: dto.endedBefore } });
+      query.andWhere('ended_at', '<', dto.endedBefore);
     }
 
     if (dto.description) {
-      query.andWhere({ description: { $like: `%${dto.description}%` } });
+      query.andWhereILike('description', `%${dto.description}%`);
     }
 
     return PaginatedResultDto.getResult({
       dto,
       query,
-      orderColumn: 'startedAt',
+      orderColumn: 'started_at',
+      mapper: (x) => plainToInstance(FindWorkLogResponseDto, x),
     });
   }
 }

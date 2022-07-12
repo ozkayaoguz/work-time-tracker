@@ -1,46 +1,47 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaginatedResultDto } from '../utils/paginated-result.dto';
-import { createMockRepository } from '../utils/mock.repository';
+import { plainToInstance } from 'class-transformer';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserEmailAlreadyExistsError } from './error/user-email-already-exists.error';
-import { User } from './user.entity';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
-import { FindUserDto } from './dto/find-user.dto';
+import { FindUserRequestDto } from './dto/find-user-request.dto';
 import { UserNotFoundError } from './error/user-not-found.error';
+import { ConnectionMock } from '../database/connection-mock';
+import { Connection } from '../database/connection';
+import { PaginatedResultDto } from '../utils/paginated-result.dto';
+import { UserDto } from './dto/user.dto';
 
-const { repo, persist, flush } = createMockRepository<UserRepository>();
+const connection = new ConnectionMock();
+const repo = connection.getRepo<UserRepository>();
 repo.isEmailExists = () => Promise.resolve(false);
 repo.isUserExists = jest.fn(() => Promise.resolve(true));
+repo.createUser = jest.fn((dto) => Promise.resolve(plainToInstance(UserDto, dto)));
+
 repo.findUser = (dto) => {
-  const res = new PaginatedResultDto<User>();
+  const res = new PaginatedResultDto<UserDto>();
   res.data = [];
 
-  if (dto.name === 'test') res.data.push({ name: 'test' } as User);
+  if (dto.name === 'test') res.data.push({ name: 'test' } as UserDto);
 
   return Promise.resolve(res);
 };
 
 describe('UserService', () => {
   let service: UserService;
-  let userRepo: UserRepository;
 
   beforeEach(async () => {
     jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService, { provide: UserRepository, useValue: repo }],
+      providers: [UserService, { provide: Connection, useValue: connection }],
     }).compile();
 
     service = module.get<UserService>(UserService);
-    userRepo = module.get(UserRepository);
   });
 
   describe('create user', () => {
     it('should check email exists', async () => {
-      var spy = jest
-        .spyOn(userRepo, 'isEmailExists')
-        .mockImplementation(() => Promise.resolve(true));
+      var spy = jest.spyOn(repo, 'isEmailExists').mockImplementation(() => Promise.resolve(true));
 
       const email = 'john@doe.com';
 
@@ -48,7 +49,6 @@ describe('UserService', () => {
       await expect(promise).rejects.toBeInstanceOf(UserEmailAlreadyExistsError);
 
       expect(spy.mock.calls[0][0]).toEqual(email);
-      expect(persist.mock.calls.length).toEqual(0);
 
       spy.mockRestore();
     });
@@ -56,16 +56,15 @@ describe('UserService', () => {
     it('should save user', async () => {
       const user = { email: 'test@mail.com', name: 'test', password: 'asd' } as CreateUserDto;
 
-      const result = await service.create(user);
+      await service.create(user);
+      const saveParams = (repo.createUser as jest.Mock).mock.calls[0][0];
 
-      const expected = expect.objectContaining({
+      const expectedSaveParams = expect.objectContaining({
         ...user,
         password: await service.createPasswordHash(user.password),
       });
 
-      expect(result).toMatchObject(expected);
-      expect(persist.mock.calls[0][0]).toEqual(expected);
-      expect(flush.mock.calls.length).toEqual(1);
+      expect(saveParams).toMatchObject(expectedSaveParams);
     });
   });
 
@@ -108,7 +107,7 @@ describe('UserService', () => {
   });
 
   it('should get users', async () => {
-    const dto = new FindUserDto();
+    const dto = new FindUserRequestDto();
     dto.name = 'test';
 
     const res = await service.find(dto);
@@ -116,7 +115,7 @@ describe('UserService', () => {
     expect(res.data[0].name).toEqual('test');
   });
 
-  it('isUserExists method should call repository user check method', async () => {
+  it('isUserExists method should call repository isUserExists method', async () => {
     const id = 'b28aec6f-54b1-4e53-a857-07806ce69db1';
 
     const res = await service.isUserExists(id);
@@ -125,7 +124,15 @@ describe('UserService', () => {
     expect((repo.isUserExists as jest.Mock).mock.calls[0][0]).toEqual(id);
   });
 
-  it('isUserExists method should call repository user check method', async () => {
+  it('checkUserExists method should call repository isUserExists method', async () => {
+    const id = '5f12c058-13c7-450d-806e-ee737bd4d2df';
+
+    await service.checkUserExists(id);
+
+    expect((repo.isUserExists as jest.Mock).mock.calls[0][0]).toEqual(id);
+  });
+
+  it('checkUserExists method should throw error when user not exists', async () => {
     const spy = jest.spyOn(repo, 'isUserExists').mockImplementation(() => Promise.resolve(false));
 
     const promise = service.checkUserExists('');
