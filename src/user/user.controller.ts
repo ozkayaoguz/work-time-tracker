@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from '../auth/auth-public.decorator';
 import { DefaultApiResponse, PaginatedApiResponse } from '../utils/default-api-response.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserRequestDto } from './dto/find-user-request.dto';
@@ -12,6 +13,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @Public()
   @ApiOperation({ summary: 'Create user' })
   @DefaultApiResponse({ type: UserDto })
   create(@Body() dto: CreateUserDto) {

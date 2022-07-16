@@ -1,7 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserWithPasswordDto } from 'src/user/dto/user-with-password.dto';
+import { UserWithPasswordDto } from '../user/dto/user-with-password.dto';
 import { UserService } from '../user/user.service';
 import { JWT_SECRET } from './auth.module';
 import { AuthService } from './auth.service';
