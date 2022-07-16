@@ -43,7 +43,7 @@ describe('UserService', () => {
 
   describe('create user', () => {
     it('should check email exists', async () => {
-      var spy = jest.spyOn(repo, 'isEmailExists').mockImplementation(() => Promise.resolve(true));
+      const spy = jest.spyOn(repo, 'isEmailExists').mockResolvedValueOnce(true);
 
       const email = 'john@doe.com';
 
@@ -51,8 +51,6 @@ describe('UserService', () => {
       await expect(promise).rejects.toBeInstanceOf(UserEmailAlreadyExistsError);
 
       expect(spy.mock.calls[0][0]).toEqual(email);
-
-      spy.mockRestore();
     });
 
     it('should save user', async () => {
@@ -144,11 +142,9 @@ describe('UserService', () => {
   });
 
   it('checkUserExists method should throw error when user not exists', async () => {
-    const spy = jest.spyOn(repo, 'isUserExists').mockImplementation(() => Promise.resolve(false));
+    jest.spyOn(repo, 'isUserExists').mockResolvedValueOnce(false);
 
     const promise = service.checkUserExists('');
     await expect(promise).rejects.toBeInstanceOf(UserNotFoundError);
-
-    spy.mockRestore();
   });
 });

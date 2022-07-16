@@ -66,13 +66,11 @@ describe('WorkLogService', () => {
       log.id = '6f728584-549c-4701-a82b-419aa8400bf0';
       const userId = 'f80854c9-c265-4e7d-bfd3-8bdf5733e0f3';
 
-      const spy = jest.spyOn(repo, 'getActiveLog').mockImplementation(() => Promise.resolve(log));
+      jest.spyOn(repo, 'getActiveLog').mockResolvedValueOnce(log);
 
       await service.finishWork(userId);
       expect((repo.finishLog as jest.Mock).mock.calls[0][0]).toEqual(log.id);
       expect((userService.checkUserExists as jest.Mock).mock.calls[0][0]).toEqual(userId);
-
-      spy.mockRestore();
     });
 
     it('should throw error if there are not active log', async () => {
