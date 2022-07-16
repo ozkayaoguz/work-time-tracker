@@ -26,7 +26,9 @@ function initDocument(app: INestApplication) {
   };
 
   const document = SwaggerModule.createDocument(app, config, options);
-  SwaggerModule.setup('/docs', app, document);
+  SwaggerModule.setup('/docs', app, document, {
+    swaggerOptions: { tagsSorter: 'alpha', operationsSorter: 'alpha' },
+  });
 }
 
 bootstrap();
