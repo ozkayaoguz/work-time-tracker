@@ -38,6 +38,7 @@ describe('AuthService', () => {
 
     const payload = await jwtService.verifyAsync(token);
 
+    expect(payload.id).toEqual(id);
     expect(payload.__shouldRemoved).toBeUndefined();
   });
 
