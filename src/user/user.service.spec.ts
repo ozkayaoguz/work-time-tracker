@@ -10,12 +10,14 @@ import { ConnectionMock } from '../database/connection-mock';
 import { Connection } from '../database/connection';
 import { PaginatedResultDto } from '../utils/paginated-result.dto';
 import { UserDto } from './dto/user.dto';
+import { UserWithPasswordDto } from './dto/user-with-password.dto';
 
 const connection = new ConnectionMock();
 const repo = connection.getRepo<UserRepository>();
 repo.isEmailExists = () => Promise.resolve(false);
 repo.isUserExists = jest.fn(() => Promise.resolve(true));
 repo.createUser = jest.fn((dto) => Promise.resolve(plainToInstance(UserDto, dto)));
+repo.getUserByEmail = jest.fn((email) => Promise.resolve({ email } as UserWithPasswordDto));
 
 repo.findUser = (dto) => {
   const res = new PaginatedResultDto<UserDto>();
@@ -113,6 +115,15 @@ describe('UserService', () => {
     const res = await service.find(dto);
 
     expect(res.data[0].name).toEqual('test');
+  });
+
+  it('should get user by email', async () => {
+    const email = 'test1@mail.com';
+
+    const res = await service.getUserByEmail(email);
+
+    expect(res.email).toEqual(email);
+    expect((repo.getUserByEmail as jest.Mock).mock.calls[0][0]).toEqual(email);
   });
 
   it('isUserExists method should call repository isUserExists method', async () => {

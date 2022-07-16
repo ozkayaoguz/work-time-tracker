@@ -3,6 +3,7 @@ import { Repository } from '../database/repository';
 import { PaginatedResultDto } from '../utils/paginated-result.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserRequestDto } from './dto/find-user-request.dto';
+import { UserWithPasswordDto } from './dto/user-with-password.dto';
 import { UserDto } from './dto/user.dto';
 
 export class UserRepository extends Repository {
@@ -18,7 +19,7 @@ export class UserRepository extends Repository {
     return res.length > 0;
   }
 
-  async createUser(dto: CreateUserDto) {
+  async createUser(dto: CreateUserDto): Promise<UserDto> {
     const res = await this.db('user')
       .insert({
         email: dto.email,
@@ -31,7 +32,16 @@ export class UserRepository extends Repository {
     return res[0];
   }
 
-  async findUser(dto: FindUserRequestDto) {
+  async getUserByEmail(email: string): Promise<UserWithPasswordDto> {
+    const res = await this.db('user')
+      .where({ email })
+      .limit(1)
+      .then((x) => plainToInstance(UserWithPasswordDto, x));
+
+    return res[0];
+  }
+
+  async findUser(dto: FindUserRequestDto): Promise<PaginatedResultDto<UserDto>> {
     const query = this.db('user').select('id', 'email', 'name', 'created_at', 'updated_at');
 
     if (dto.email) {

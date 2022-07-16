@@ -40,6 +40,10 @@ export class UserService {
     return this.db.getRepository(UserRepository).findUser(dto);
   }
 
+  getUserByEmail(email: string) {
+    return this.db.getRepository(UserRepository).getUserByEmail(email);
+  }
+
   createPasswordHash(password: string): Promise<string> {
     return asyncScrypt(PASSWORD_SALT, password);
   }
