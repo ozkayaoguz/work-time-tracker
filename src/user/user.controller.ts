@@ -14,7 +14,7 @@ export class UserController {
 
   @Post()
   @Public()
-  @ApiOperation({ summary: 'Create user' })
+  @ApiOperation({ summary: 'Create user', description: "**Authentication not required** for now" })
   @DefaultApiResponse({ type: UserDto })
   create(@Body() dto: CreateUserDto) {
     return this.userService.create(dto);
