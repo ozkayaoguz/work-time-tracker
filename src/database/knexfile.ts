@@ -9,7 +9,7 @@ const DB_PORT = parseInt(process.env.DB_PORT || '5432');
 
 const config: Knex.Config = {
   client: 'postgresql',
-  debug: true,
+  debug: false,
   connection: {
     host: DB_HOST,
     port: DB_PORT,
