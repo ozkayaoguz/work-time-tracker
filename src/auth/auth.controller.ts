@@ -15,7 +15,7 @@ export class AuthController {
   @Public()
   @ApiOperation({ summary: 'Login' })
   @DefaultApiResponse({ type: LoginResponseDto })
-  create(@Body() dto: LoginRequestDto) {
+  login(@Body() dto: LoginRequestDto) {
     return this.authService.login(dto);
   }
 }
